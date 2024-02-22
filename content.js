@@ -1,4 +1,5 @@
 
+let hostExists = false;
 let videoElement = null;
 let serverAddress = null;
 
@@ -32,13 +33,31 @@ function collectInputs() {
     return true;
 }
 
+function setUpMessaging() {
+    chrome.runtime.onMessage.addListener(
+        (request, sender, sendResponse) => {
+            if (request.message === "hey") {
+                if (!hostExists) {
+                    sendResponse({message: "iamhost"});
+                }
+                return;
+            }
+            if (request.message === "iamhost") {
+                hostExists = true;
+                return;
+            }
+            // TODO: Handle more messages
+        }
+    );
+}
+
 function onInject() {
 
     if (!collectInputs()) {
         return;
     }
 
-
+    setUpMessaging();
 }
 
 function getElementByXpath(path) {
