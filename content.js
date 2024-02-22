@@ -3,6 +3,11 @@ let hostExists = false;
 let videoElement = null;
 let serverAddress = null;
 
+function sendMsg(msg) {
+    chrome.runtime.sendMessage({message: msg})
+        .catch(console.error);
+}
+
 function collectInputs() {
     let videoXPath = prompt("Paste the video element XPath here: ");
 
@@ -23,7 +28,10 @@ function collectInputs() {
         return false;
     }
 
-    serverAddress = prompt("Enter the server address: ", "localhost:8888");
+    serverAddress = prompt(
+        "Enter the server address: ",
+        "localhost:8888"
+    );
 
     if (serverAddress === null) {
         alert("Server address cannot be empty.");
@@ -46,6 +54,10 @@ function setUpMessaging() {
                 hostExists = true;
                 return;
             }
+            if (request.message === "disconnected") {
+                alert("Lost connection to the server. Please reload the page.");
+                return;
+            }
             // TODO: Handle more messages
         }
     );
@@ -58,10 +70,18 @@ function onInject() {
     }
 
     setUpMessaging();
+
+    sendMsg("connect " + serverAddress);
 }
 
 function getElementByXpath(path) {
-    return document.evaluate(path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+    return document.evaluate(
+        path,
+        document,
+        null,
+        XPathResult.FIRST_ORDERED_NODE_TYPE,
+        null
+    ).singleNodeValue;
 }
 
 onInject();
