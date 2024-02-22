@@ -3,10 +3,6 @@ let hostExists = false;
 let videoElement = null;
 let serverAddress = null;
 
-function sendMsg(msg) {
-    chrome.runtime.sendMessage({message: msg})
-        .catch(console.error);
-}
 
 function collectInputs() {
     let videoXPath = prompt("Paste the video element XPath here: ");
@@ -58,9 +54,40 @@ function setUpMessaging() {
                 alert("Lost connection to the server. Please reload the page.");
                 return;
             }
+            if (request.message === "play") {
+                videoElement.play();
+                return;
+            }
+            if (request.message === "pause") {
+                videoElement.pause();
+                return;
+            }
+            if (request.startsWith("seek")) {
+                videoElement.currentTime = request.split(" ", 2)[1];
+                return;
+            }
             // TODO: Handle more messages
         }
     );
+}
+
+function setUpVideoListener() {
+    videoElement.addEventListener("play", () => {
+        if (hostExists) return;
+        sendMsg("play");
+        sendMsg("seek " + videoElement.currentTime);
+    });
+
+    videoElement.addEventListener("pause", () => {
+        if (hostExists) return;
+        sendMsg("pause");
+        sendMsg("seek " + videoElement.currentTime);
+    });
+
+    videoElement.addEventListener("seeked", () => {
+        if (hostExists) return;
+        sendMsg("seek " + videoElement.currentTime);
+    });
 }
 
 function onInject() {
@@ -72,6 +99,13 @@ function onInject() {
     setUpMessaging();
 
     sendMsg("connect " + serverAddress);
+
+    setUpVideoListener();
+}
+
+function sendMsg(msg) {
+    chrome.runtime.sendMessage({message: msg})
+        .catch(console.error);
 }
 
 function getElementByXpath(path) {
