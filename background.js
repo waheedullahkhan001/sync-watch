@@ -36,7 +36,9 @@ function setUpMessaging() {
                 setUpNMH(sender.tab.id, serverAddress);
                 return;
             }
-            // TODO: Handle more messages
+
+            let port = storage[sender.tab.id];
+            sendMsgToNHM(port, request.message);
         }
     );
 }
