@@ -1,0 +1,3 @@
+The goal is to be able to play video in sync with your friend(s).
+
+> Work in progress...
